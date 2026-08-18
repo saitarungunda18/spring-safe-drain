@@ -1,0 +1,14 @@
+safe-drain:
+  enabled: true
+  timeout: 30s
+  http:
+    enabled: true
+    protected-paths: [/work/**, /work]
+    excluded-paths: [/actuator/**]
+    retry-after-seconds: 30
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,safeDrain
+# Production deployments must bind management to a private interface/port and add authentication.
