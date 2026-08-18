@@ -2,14 +2,14 @@
 
 ## System context
 
-ECS Safe Drain runs inside each Spring Boot application instance. It does not deploy containers or move load-balancer traffic; ECS, CodeDeploy, and the load balancer remain responsible for those platform operations.
+Spring Safe Drain runs inside each Spring Boot application instance. It does not deploy containers or move load-balancer traffic; the deployment platform and traffic router remain responsible for those operations.
 
 ```mermaid
 flowchart LR
-    U["Upstream client"] --> ALB["Application Load Balancer"]
-    ALB --> APP["Spring Boot application"]
+    U["Upstream client"] --> ROUTER["Load balancer / traffic router"]
+    ROUTER --> APP["Spring Boot application"]
     OPS["Deployment operator"] --> EP["Safe Drain Actuator endpoint"]
-    EP --> FW["ECS Safe Drain framework"]
+    EP --> FW["Spring Safe Drain framework"]
     FW --> APP
     FW --> STATUS["Drain status / safeToTerminate"]
     STATUS --> OPS
@@ -138,6 +138,6 @@ The coordinator serializes state transitions, zero-work callbacks, timeout callb
 
 Participants stop their own admission, report their safety condition, and resume when requested. Zero participants is valid. A participant failure while draining is recorded in `lastError` and prevents `DRAINED`. A participant status exception is represented as a non-drained `ParticipantDrainStatus`. A timeout changes the state to `TIMED_OUT` but never claims that termination is safe.
 
-## Boundary with ECS
+## Boundary with the deployment platform
 
-The current framework decides whether this process is safe to terminate. It does not request ECS task protection, change desired task count, receive deployment hooks, control ALB target registration, or prevent `SIGKILL`. An external deployment controller must stop routing new traffic, initiate drain early enough, observe the latest `safeToTerminate` value, and coordinate task termination.
+The current framework decides whether this process is safe to terminate. It does not call ECS or Kubernetes APIs, change replica counts, receive deployment hooks, control load-balancer registration, or prevent forced process termination. An external deployment controller must stop routing new traffic, initiate drain early enough, observe the latest `safeToTerminate` value, and coordinate instance termination.
