@@ -1,14 +1,14 @@
-# ECS Safe Drain
+# Spring Safe Drain
 
-> ECS Safe Drain is an extensible Spring Boot framework for business-aware workload draining on Amazon ECS.
+> Spring Safe Drain is an extensible, platform-independent Spring Boot framework for tracking in-flight work and coordinating graceful application shutdown.
 
-ECS Safe Drain closes application-level admission before termination and lets work already accepted by the process finish. Milestone 1 supports protected servlet HTTP paths, exposes lifecycle state through Actuator, and provides extension contracts for future Kafka, scheduler, outbox, and business-safety participants.
+Spring Safe Drain closes application-level admission before termination and lets work already accepted by the process finish. Milestone 1 supports protected servlet HTTP paths, exposes lifecycle state through Actuator, and provides extension contracts for future Kafka, scheduler, outbox, and business-safety participants.
 
 ## Why this exists
 
-ALB deregistration delay controls routing at the load balancer, but it does not know whether the application is still committing a transaction. ECS `stopTimeout` is only a grace period between termination signals and forced exit. Neither mechanism coordinates Kafka offsets, scheduled work, outbox delivery, or application-specific invariants. This framework provides the missing in-process safety decision. It complements infrastructure controls; it does not replace them.
+Deployment platforms and load balancers can stop routing traffic, but they do not know whether an application is still committing a transaction. Platform termination grace periods only delay forced exit. Neither mechanism coordinates Kafka offsets, scheduled work, outbox delivery, or application-specific invariants. This framework provides the missing in-process safety decision. It complements infrastructure controls in ECS, Kubernetes, virtual machines, and other environments; it does not replace them.
 
-Milestone 1 deliberately implements only application-level HTTP draining. It does not call ECS APIs, delay task termination by itself, or provide exactly-once processing.
+Milestone 1 deliberately implements only application-level HTTP draining. It does not call deployment-platform APIs, delay process termination by itself, or provide exactly-once processing.
 
 ## Modules
 
@@ -39,7 +39,7 @@ Consumer dependency for this local project version:
 
 ```xml
 <dependency>
-  <groupId>io.github.ecssafedrain</groupId>
+  <groupId>io.github.springsafedrain</groupId>
   <artifactId>safe-drain-spring-boot-starter</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 </dependency>
@@ -106,8 +106,8 @@ The drain endpoint changes application availability. Never expose it on a public
 
 This release targets Spring MVC servlet applications. Servlet async requests remain counted until completion, timeout, or error. A process crash can still interrupt work, so business operations must be idempotent. Asynchronous participant adapters must call `DrainCoordinator.requestEvaluation()` when their status changes; this notification avoids polling.
 
-The sample stores generic work items in memory and simulates latency. It is demonstration code, not a durable job-processing system. Milestone 1 neither controls ECS nor guarantees exactly-once processing.
+The sample stores generic work items in memory and simulates latency. It is demonstration code, not a durable job-processing system. Milestone 1 neither controls the deployment platform nor guarantees exactly-once processing.
 
-Planned milestones may add Kafka, scheduled-job, outbox, and ECS task-protection/orchestration integrations. They are intentionally absent here.
+Planned milestones may add Kafka, scheduled-job, outbox, and platform-specific orchestration integrations. They are intentionally absent here.
 
 See [architecture](docs/architecture.md) and [failure scenarios](docs/failure-scenarios.md).

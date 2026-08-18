@@ -2,7 +2,7 @@
 
 ## Termination during HTTP processing
 
-An accepted protected request owns a token until its servlet lifecycle completes. Drain rejects later protected requests. If ECS forcibly terminates before `DRAINED`, the framework cannot save the request; external grace periods must exceed the drain budget.
+An accepted protected request owns a token until its servlet lifecycle completes. Drain rejects later protected requests. If the deployment platform forcibly terminates the process before `DRAINED`, the framework cannot save the request; external grace periods must exceed the drain budget.
 
 ## Drain timeout
 
